@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Describir imagenes</title>
+    <link rel="stylesheet" href="/webcam-app/static/style.css">
+</head>
+<body>
+    <div class = "container">
+        <h1>Describir fotos</h1>
+        <form method="post" action="/capture">
+            <label for="camera_index">Seleccione su camara:</label>
+            <select name="camera_index" id="camera_index" required>
+                {% for camera in cameras %}
+                    <option value="{{ camera }}">Camara {{ camara }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn" type="submit">Sacar foto</button>
+        </form>
+
+    </div>
+    
+</body>
+</html>

@@ -3,12 +3,16 @@ import time
 import base64
 from dotenv import load_dotenv
 from flask import Flask,request, render_template
+from PIL import Image
+import torch
+from transformers import BlipProcessor, BlipForConditionalGeneration
+
 
 load_dotenv()
 
 app =Flask (__name__)
 
-def list_camera():
+def list_cameras():
     index = 0
     arr = []
     while True:
@@ -47,35 +51,21 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode("utf-8")
 
+
+
+
 def analizar_foto(image_path):
-    from openai import OpenAI
-    base64_image = encode_image(image_path)
-    client = OpenAI()
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Describe la imagen en detalle"},
-                    {
-                        "type": "image_url",
-                        "image_url":{
-                            "url": f"data:image/jpeg;base64,{base64_image}",
-                            "detail": "high"
+    processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+    model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-                        }
-                    }
-                ]
-            }
-        ],
-        max_tokens=300,
-    )
+    image = Image.open(image_path).convert("RGB")
+    inputs = processor(image, return_tensors="pt")
+    out = model.generate(**inputs)
+    caption = processor.decode(out[0], skip_special_tokens=True)
 
+    return caption
 
-    return response.choices[0].message.content
-
-
-capture_image(0)
-respuesta = analizar_foto("webcam-app/static/captured_image.jpg")
-print(respuesta)
+@app.route('/')
+def index():
+    cameras = list_cameras()
+    return render_template('index.html',cameras=cameras)
