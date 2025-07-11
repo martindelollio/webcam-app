@@ -2,8 +2,14 @@ import cv2
 import time
 from flask import Flask, request, render_template
 from PIL import Image
-import torch
 from transformers import BlipProcessor, BlipForConditionalGeneration
+from deep_translator import GoogleTranslator
+
+
+
+
+
+
 
 app = Flask(__name__)
 
@@ -40,6 +46,8 @@ def capture_image(camera_index):
     else:
         print('Error al capturar la imagen')
         return None
+def traducir_txt(texto):
+    return GoogleTranslator(source='auto', target='es').translate(texto)
 
 
 def analizar_foto(image_path):
@@ -50,7 +58,9 @@ def analizar_foto(image_path):
     inputs = processor(image, return_tensors="pt")
     out = model.generate(**inputs)
     caption = processor.decode(out[0], skip_special_tokens=True)
-    return caption
+
+    caption_es= traducir_txt(caption)
+    return caption_es
 
 @app.route('/')
 def index():
